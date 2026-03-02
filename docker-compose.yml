@@ -1,0 +1,15 @@
+services:
+  kestra:
+    image: kestra/kestra:latest-full
+    command: server local
+    ports:
+      - "8080:8080"
+    environment:
+      KESTRA_CONFIGURATION: |
+        kestra:
+          server:
+            http:
+              port: 8080
+    volumes:
+      - ./kestra:/kestra # Changed from /app/kestra to /kestra
+      - /var/run/docker.sock:/var/run/docker.sock  # This is the "bridge" so that applications (like Kestra) can talk to Docker
