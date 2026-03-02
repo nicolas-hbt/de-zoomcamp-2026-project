@@ -1,0 +1,53 @@
+id: weather_ingestion
+namespace: company.data.weather
+
+tasks:
+  - id: ingest_to_gcs
+    type: io.kestra.plugin.scripts.python.Script
+    containerImage: python:3.11-slim
+    beforeCommands:
+      - pip install requests pandas pyarrow openpyxl google-cloud-storage
+    env:
+      # We will set this variable in the Namespace Editor next
+      GCP_CREDS: "{{ secret('GCP_SERVICE_ACCOUNT') }}"
+      BUCKET: "de-zoomcamp-project-terra-bucket"
+    script: |
+      import requests
+      import pandas as pd
+      import io
+      import os
+      import json
+      from google.cloud import storage
+      from google.oauth2 import service_account
+
+      # 1. Download data from FetchSeries
+      URL = "https://www.fetchseries.com/climate/average-city-temperatures-fsr/average-city-temperatures-fsr.xlsx"
+      r = requests.get(URL, timeout=60)
+      r.raise_for_status()
+      
+      # 2. Process & Fix Type issues
+      df = pd.read_excel(io.BytesIO(r.content), engine='openpyxl')
+      df.columns = [c.replace(' ', '_').replace('-', '_').lower() for c in df.columns]
+      
+      # Force numeric types to avoid Parquet errors
+      for col in df.columns:
+          df[col] = pd.to_numeric(df[col], errors='coerce')
+      
+      df = df.dropna(how='all')
+
+      # 3. Authenticate using the Namespace Variable
+      creds_dict = json.loads(os.environ["GCP_CREDS"])
+      creds = service_account.Credentials.from_service_account_info(creds_dict)
+      client = storage.Client(credentials=creds, project=creds_dict['project_id'])
+      
+      # 4. Upload to GCS
+      blob_name = f"raw/climate/{'{{ execution.startDate | date('yyyy-MM-dd') }}'}_weather.parquet"
+      bucket = client.bucket(os.environ["BUCKET"])
+      blob = bucket.blob(blob_name)
+      
+      with io.BytesIO() as buffer:
+          df.to_parquet(buffer, index=False, engine='pyarrow')
+          buffer.seek(0)
+          blob.upload_from_file(buffer, content_type="application/octet-stream")
+      
+      print(f"Successfully uploaded {len(df)} rows to {blob_name}")
