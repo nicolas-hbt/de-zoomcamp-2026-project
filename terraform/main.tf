@@ -51,14 +51,3 @@ resource "google_storage_bucket_iam_member" "ingest_role" {
   role   = "roles/storage.objectAdmin"
   member = "serviceAccount:${google_service_account.ingest_sa.email}"
 }
-
-# Create the JSON key for local testing with 'uv'
-resource "google_service_account_key" "ingest_key" {
-  service_account_id = google_service_account.ingest_sa.name
-}
-
-# Output the key so you can decode it locally
-output "ingest_sa_key" {
-  value     = google_service_account_key.ingest_key.private_key
-  sensitive = true
-}
