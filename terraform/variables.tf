@@ -27,6 +27,13 @@ variable "gcs_bucket_name" {
   default     = "de-zoomcamp-project-terra-bucket"
 }
 
+# For ingestion service account
+variable "ingest_sa_id" {
+  description = "ID for the ingestion service account"
+  type        = string
+  default     = "weather-data-ingest"
+}
+
 variable "credentials" {
   description = "My Credentials"
   default     = "keys/my-gcp-key.json" 
