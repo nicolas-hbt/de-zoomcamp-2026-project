@@ -1,8 +1,10 @@
 # Ignore GCP Service Account Keys in the terraform folder
 terraform/keys/
 *.json
+.env_encoded
 
 # Ignore local Terraform state files 
 terraform/.terraform/
 terraform/*.tfstate
 terraform/*.tfstate.backup
+

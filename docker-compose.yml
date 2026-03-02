@@ -1,6 +1,8 @@
 services:
   kestra:
     image: kestra/kestra:latest-full
+    env_file: .env_encoded
+    user: root
     command: server local
     ports:
       - "8080:8080"
