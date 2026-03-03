@@ -27,18 +27,31 @@ def main():
     r.raise_for_status()
     
     # 2. Process & Clean
-    print("🧹 Cleaning data and fixing types...")
+    print("🧹 Cleaning data and unpivoting...")
     df = pd.read_excel(io.BytesIO(r.content), engine='openpyxl')
     
-    # Standardize column names
-    df.columns = [c.replace(' ', '_').replace('-', '_').lower() for c in df.columns]
+    # Drop the empty first column (unnamed: 0)
+    df = df.drop(columns=[df.columns[0]])
 
-    # Fix mixed types (Coerce to float)
-    for col in df.columns:
-        df[col] = pd.to_numeric(df[col], errors='coerce')
+    # Standardize the Date column
+    df.rename(columns={df.columns[0]: 'date'}, inplace=True)
+    df['date'] = pd.to_datetime(df['date'])
 
-    # Drop fully empty rows
-    df = df.dropna(how='all')
+    # Unpivot from Wide to Long
+    df = df.melt(id_vars=['date'], var_name='raw_location', value_name='avg_temp')
+
+    # Extract City and Country using the reliable "Split" logic
+    location_parts = df['raw_location'].str.split(' - ', expand=True)
+    df['country'] = location_parts[1].str.strip().str.title()
+    df['city'] = location_parts[0].str.extract(r'in\s+(.*?)\s+\(')[0].str.strip().str.title()
+
+    # Apply 2020 Filter
+    df = df[df['date'].dt.year >= 2020]
+
+    # Final cleanup
+    df = df.dropna(subset=['city', 'country', 'avg_temp'])
+    df['avg_temp'] = pd.to_numeric(df['avg_temp'], errors='coerce')
+    df = df[['date', 'city', 'country', 'avg_temp']]
 
     # 3. Upload
     print(f"⬆️ Uploading Parquet to GCS...")
