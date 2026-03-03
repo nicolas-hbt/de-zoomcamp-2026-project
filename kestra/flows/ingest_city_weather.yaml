@@ -35,6 +35,10 @@ tasks:
       
       df = df.dropna(how='all')
 
+      if 'year' in df.columns:
+          df = df[df['year'] >= 2020]
+          print(f"Filtered data. Remaining rows from 2020 onwards: {len(df)}")
+
       # 3. Authenticate using the Namespace Variable
       creds_dict = json.loads(os.environ["GCP_CREDS"])
       creds = service_account.Credentials.from_service_account_info(creds_dict)
