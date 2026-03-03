@@ -55,3 +55,8 @@ tasks:
           blob.upload_from_file(buffer, content_type="application/octet-stream")
       
       print(f"Successfully uploaded {len(df)} rows to {blob_name}")
+
+triggers:
+  - id: daily_7am_schedule
+    type: io.kestra.plugin.core.trigger.Schedule
+    cron: "0 7 * * *" # Runs at 07:00 every morning
