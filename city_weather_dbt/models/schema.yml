@@ -1,0 +1,20 @@
+version: 2
+
+models:
+  - name: stg_weather
+    description: "Staged weather data with Celsius and Fahrenheit conversions. Filtered for years >= 2020."
+    columns:
+      - name: date
+        description: "The timestamp of the weather observation."
+        tests:
+          - not_null
+      - name: city
+        description: "The city name, standardized to Title Case."
+        tests:
+          - not_null
+      - name: temp_celsius
+        description: "Average temperature in degrees Celsius."
+        tests:
+          - not_null
+      - name: temp_fahrenheit
+        description: "Average temperature converted to degrees Fahrenheit."
