@@ -1,0 +1,30 @@
+[0m10:43:01.493155 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'start', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x108a10c20>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x109977890>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x1099779d0>]}
+
+
+============================== 10:43:01.495242 | cbff06fb-4d77-4e0a-bb8e-a1ea10650d0d ==============================
+[0m10:43:01.495242 [info ] [MainThread]: Running with dbt=1.11.6
+[0m10:43:01.495510 [debug] [MainThread]: running dbt with arguments {'version_check': 'True', 'log_cache_events': 'False', 'quiet': 'False', 'no_print': 'None', 'warn_error_options': 'WarnErrorOptionsV2(error=[], warn=[], silence=[])', 'log_format': 'default', 'indirect_selection': 'eager', 'log_path': 'logs', 'empty': 'None', 'write_json': 'True', 'static_parser': 'True', 'partial_parse': 'True', 'fail_fast': 'False', 'target_path': 'None', 'cache_selected_only': 'False', 'use_experimental_parser': 'False', 'introspect': 'True', 'use_colors': 'True', 'send_anonymous_usage_stats': 'True', 'debug': 'False', 'printer_width': '80', 'profiles_dir': '/Users/nico/.dbt', 'invocation_command': 'dbt init city_weather_dbt', 'warn_error': 'None'}
+[0m10:43:01.524660 [debug] [MainThread]: Starter project path: /Users/nico/Documents/de-zoomcamp-2026-project/.venv/lib/python3.13/site-packages/dbt/include/starter_project
+[0m10:43:01.528653 [info ] [MainThread]: 
+Your new dbt project "city_weather_dbt" was created!
+
+For more information on how to configure the profiles.yml file,
+please consult the dbt documentation here:
+
+  https://docs.getdbt.com/docs/configure-your-profile
+
+One more thing:
+
+Need help? Don't hesitate to reach out to us via GitHub issues or on Slack:
+
+  https://community.getdbt.com/
+
+Happy modeling!
+
+[0m10:43:01.528824 [info ] [MainThread]: Setting up your profile.
+[0m10:46:38.231428 [info ] [MainThread]: Profile city_weather_dbt written to /Users/nico/.dbt/profiles.yml using target's profile_template.yml and your supplied values. Run 'dbt debug' to validate the connection.
+[0m10:46:38.240270 [debug] [MainThread]: Resource report: {"command_name": "init", "command_success": true, "command_wall_clock_time": 216.78781, "process_in_blocks": "0", "process_kernel_time": 0.305469, "process_mem_max_rss": "210436096", "process_out_blocks": "0", "process_user_time": 0.899442}
+[0m10:46:38.243777 [debug] [MainThread]: Command `dbt init` succeeded at 10:46:38.243501 after 216.79 seconds
+[0m10:46:38.244768 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x11182e190>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x1099b45f0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x1116dce20>]}
+[0m10:46:38.245332 [debug] [MainThread]: Flushing usage events
+[0m10:46:38.829674 [debug] [MainThread]: An error was encountered while trying to flush usage events
