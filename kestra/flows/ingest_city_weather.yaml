@@ -6,57 +6,79 @@ tasks:
     type: io.kestra.plugin.scripts.python.Script
     containerImage: python:3.11-slim
     beforeCommands:
-      - pip install requests pandas pyarrow openpyxl google-cloud-storage
+      - pip install requests pandas openpyxl google-cloud-storage pyarrow
     env:
-      # We will set this variable in the Namespace Editor next
       GCP_CREDS: "{{ secret('GCP_SERVICE_ACCOUNT') }}"
-      BUCKET: "de-zoomcamp-project-terra-bucket"
+      BUCKET: "{{ kv('GCP_BUCKET_NAME') }}"
     script: |
       import requests
       import pandas as pd
-      import io
-      import os
-      import json
+      import io, os, json
       from google.cloud import storage
       from google.oauth2 import service_account
 
-      # 1. Download data from FetchSeries
-      URL = "https://www.fetchseries.com/climate/average-city-temperatures-fsr/average-city-temperatures-fsr.xlsx"
-      r = requests.get(URL, timeout=60)
-      r.raise_for_status()
-      
-      # 2. Process & Fix Type issues
+      # 1. Download & Process
+      r = requests.get("https://www.fetchseries.com/climate/average-city-temperatures-fsr/average-city-temperatures-fsr.xlsx")
       df = pd.read_excel(io.BytesIO(r.content), engine='openpyxl')
-      df.columns = [c.replace(' ', '_').replace('-', '_').lower() for c in df.columns]
-      
-      # Force numeric types to avoid Parquet errors
-      for col in df.columns:
-          df[col] = pd.to_numeric(df[col], errors='coerce')
-      
-      df = df.dropna(how='all')
+      df = df.drop(columns=[df.columns[0]])
+      df.rename(columns={df.columns[0]: 'date'}, inplace=True)
+      df['date'] = pd.to_datetime(df['date'])
 
-      if 'year' in df.columns:
-          df = df[df['year'] >= 2020]
-          print(f"Filtered data. Remaining rows from 2020 onwards: {len(df)}")
+      # 2. Unpivot & Extract
+      df = df.melt(id_vars=['date'], var_name='raw_location', value_name='avg_temp')
+      location_parts = df['raw_location'].str.split(' - ', expand=True)
+      df['country'] = location_parts[1].str.strip().str.title()
+      df['city'] = location_parts[0].str.extract(r'in\s+(.*?)\s+\(')[0].str.strip().str.title()
 
-      # 3. Authenticate using the Namespace Variable
+      # 3. Filter & Clean
+      df = df[df['date'].dt.year >= 2020]
+      df = df.dropna(subset=['city', 'country', 'avg_temp'])
+      df['avg_temp'] = pd.to_numeric(df['avg_temp'], errors='coerce')
+
+      # 4. Upload
       creds_dict = json.loads(os.environ["GCP_CREDS"])
-      creds = service_account.Credentials.from_service_account_info(creds_dict)
-      client = storage.Client(credentials=creds, project=creds_dict['project_id'])
-      
-      # 4. Upload to GCS
-      blob_name = f"raw/climate/{'{{ execution.startDate | date('yyyy-MM-dd') }}'}_weather.parquet"
+      client = storage.Client(credentials=service_account.Credentials.from_service_account_info(creds_dict), project=creds_dict['project_id'])
+      blob_name = f"raw/climate/{{ execution.startDate | date('yyyy-MM-dd') }}_weather.parquet"
       bucket = client.bucket(os.environ["BUCKET"])
-      blob = bucket.blob(blob_name)
       
       with io.BytesIO() as buffer:
           df.to_parquet(buffer, index=False, engine='pyarrow')
           buffer.seek(0)
-          blob.upload_from_file(buffer, content_type="application/octet-stream")
-      
-      print(f"Successfully uploaded {len(df)} rows to {blob_name}")
+          bucket.blob(blob_name).upload_from_file(buffer, content_type="application/octet-stream")
+
+  - id: update_bigquery
+    type: io.kestra.plugin.gcp.bigquery.Query
+    serviceAccount: "{{ secret('GCP_SERVICE_ACCOUNT') }}"
+    projectId: "{{ kv('GCP_PROJECT_ID') }}"
+    location: "{{ kv('GCP_LOCATION') }}"
+    sql: |
+      -- 1. Refresh External Table (points to all files in GCS)
+      CREATE OR REPLACE EXTERNAL TABLE `{{ kv('GCP_PROJECT_ID') }}.{{ kv('GCP_DATASET') }}.ext_weather`
+      OPTIONS (
+        format = 'PARQUET',
+        uris = ['gs://{{ kv('GCP_BUCKET_NAME') }}/raw/climate/*.parquet']
+      );
+
+      -- 2. Create optimized table if it doesn't exist
+      CREATE TABLE IF NOT EXISTS `{{ kv('GCP_PROJECT_ID') }}.{{ kv('GCP_DATASET') }}.city_weather_optimized`
+      (
+        date TIMESTAMP,
+        city STRING,
+        country STRING,
+        avg_temp FLOAT64
+      )
+      PARTITION BY DATE(date)
+      CLUSTER BY country, city;
+
+      -- 3. Merge new data from GCS into our optimized table
+      MERGE INTO `{{ kv('GCP_PROJECT_ID') }}.{{ kv('GCP_DATASET') }}.city_weather_optimized` T
+      USING `{{ kv('GCP_PROJECT_ID') }}.{{ kv('GCP_DATASET') }}.ext_weather` S
+      ON T.date = S.date AND T.city = S.city AND T.country = S.country
+      WHEN NOT MATCHED THEN
+        INSERT (date, city, country, avg_temp)
+        VALUES (S.date, S.city, S.country, S.avg_temp);
 
 triggers:
-  - id: daily_7am_schedule
+  - id: daily_7am
     type: io.kestra.plugin.core.trigger.Schedule
-    cron: "0 7 * * *" # Runs at 07:00 every morning
+    cron: "0 7 * * *"
