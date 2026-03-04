@@ -1,0 +1,8 @@
+version: 2
+
+sources:
+  - name: raw_weather
+    database: de-zoomcamp-project-488915
+    schema: city_weather_dataset
+    tables:
+      - name: city_weather_optimized
