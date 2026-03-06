@@ -2,6 +2,17 @@
 
 with source_data as (
     select * from {{ source('raw_weather', 'city_weather_optimized') }}
+),
+
+deduplicated as (
+    select 
+        *,
+        -- Groups identical rows and assigns a number to each
+        row_number() over (
+            partition by date, city, country 
+            order by date
+        ) as row_num
+    from source_data
 )
 
 select
@@ -9,7 +20,7 @@ select
     city,
     country,
     avg_temp as temp_celsius,
-    -- Simple Fahrenheit conversion for the dashboard
     round((avg_temp * 9/5) + 32, 2) as temp_fahrenheit
-from source_data
-where avg_temp is not null
+from deduplicated
+-- Only keep the first occurrence of each row
+qualify row_num = 1
