@@ -18,3 +18,21 @@ models:
           - not_null
       - name: temp_fahrenheit
         description: "Average temperature converted to degrees Fahrenheit."
+
+  - name: fct_monthly_city_stats
+    description: "Monthly aggregated weather stats for cities. Gold layer table."
+    columns:
+      - name: monthly_avg_temp_c
+        description: "The average temperature for the month in Celsius."
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: -60
+              max_value: 60
+              inclusive: true
+      - name: days_recorded
+        description: "Number of days with measurements in this month."
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 1
+              max_value: 31
