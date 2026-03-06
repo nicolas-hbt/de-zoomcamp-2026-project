@@ -23,4 +23,8 @@ select
     round((avg_temp * 9/5) + 32, 2) as temp_fahrenheit
 from deduplicated
 -- Only keep the first occurrence of each row
-qualify row_num = 1
+-- BigQuery Power Move: Deduplicate directly in the final select
+qualify row_number() over (
+    partition by date, city, country 
+    order by date
+) = 1
