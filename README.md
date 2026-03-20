@@ -15,6 +15,7 @@ A production-grade, end-to-end data engineering pipeline that ingests real-time 
 8. [Pipeline Execution Details](#8-pipeline-execution-details)
 9. [dbt Transformation Layers](#9-dbt-transformation-layers)
 10. [Running Tests & Validation](#10-running-tests--validation)
+11. [Data Visualization](#11-data-visualization)
 
 ---
 
@@ -466,6 +467,17 @@ dbt docs generate
 dbt docs serve --port 8001
 # Open http://localhost:8001 in your browser
 ```
+
+---
+
+## 11. Data Visualization
+
+Link to the Looker Studio visualization: https://lookerstudio.google.com/u/2/reporting/5bb4e362-83c4-4b2b-a554-480a7a4071c5/page/hNTsF
+
+WARNING: there is a bug with temperatures in C and F grad -- both way above what they should be. My gut feeling is that temperatures in Celsius are actually in Fahrenheit, and that temperatures in Fahrenheit are converted to Fahrenheit from Celsius twice, i.e. after applying another layer of Celsius -> Fahrenheit conversion).
+
+
+<img width="1156" height="803" alt="image" src="https://github.com/user-attachments/assets/aef6de7b-59e8-4469-a950-bf1bb49fa688" />
 
 ---
 
