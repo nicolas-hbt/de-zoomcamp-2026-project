@@ -121,7 +121,7 @@ This project demonstrates a production-ready solution for weather data ingestion
 | Containerization | Docker + Docker Compose     |
 | Ingestion | Python                      |
 | Transformation | dbt (dbt Core)              |
-| Visualization | TBD                         |
+| Visualization | Looker Studio                         |
 
 ---
 
