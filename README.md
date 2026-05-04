@@ -182,15 +182,9 @@ de-zoomcamp-2026-project/
 
 ### 1. Clone and Prepare the Repository
 
-```bash
-
-```
-
 ### 2. GCP Setup with Terraform
 
 #### Step 2a: Create GCP Service Account & Credentials
-
-TODO
 
 #### Step 2b: Deploy Infrastructure with Terraform
 
@@ -225,16 +219,7 @@ terraform apply
 
 #### Step 3a: Create `.env_encoded` for Kestra Secrets
 
-The `.env_encoded` file is already committed with GCP credentials. It contains:
-
-```bash
-
-```
-
-**To update with your credentials:**
-```bash
-
-```
+The `.env_encoded` file is already committed with GCP credentials.
 
 #### Step 3b: Configure Kestra Key-Value Pairs
 
@@ -478,7 +463,3 @@ WARNING: there is a bug with temperatures in C and F grad -- both way above what
 
 
 <img width="1156" height="803" alt="image" src="https://github.com/user-attachments/assets/aef6de7b-59e8-4469-a950-bf1bb49fa688" />
-
----
-
-## Key Concepts & Optimization Decisions
