@@ -1,5 +1,5 @@
 # 🌦️ City Weather Pipeline — DE Zoomcamp 2026 Project
-A production-grade, end-to-end data engineering pipeline that ingests real-time and historical weather data for multiple cities, stores it in Google Cloud Storage (GCS) and BigQuery, transforms it with dbt, and makes it available for analytics — all orchestrated with Kestra, provisioned with Terraform, and containerized with Docker.
+An end-to-end data engineering pipeline that ingests real-time and historical weather data for multiple cities, stores it in Google Cloud Storage (GCS) and BigQuery, transforms it with dbt, and makes it available for analytics — all orchestrated with Kestra, provisioned with Terraform, and containerized with Docker.
 
 ---
 
